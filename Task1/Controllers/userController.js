@@ -1,6 +1,7 @@
 const users = require("../Model/userModel")
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const nodemailer = require('nodemailer')
 
 exports.userRegistration = async(req,res) => {
     const {username,email,password} = req.body
@@ -50,4 +51,36 @@ exports.userLogin = async(req,res) => {
         console.log(error);
         return res.status(500).json("Internal server error")
     }
+}
+
+exports.sendOTPtoEmail = async(req,res) => {
+    const {email} = req.body
+    const existingUser = await users.findOne({email})
+    try {
+        if(!existingUser){
+            return res.status(404).json("User not found")
+        }else{
+            const otp = Math.floor(100000 + Math.random() * 900000)
+            const transporter = nodemailer.createTransport({
+                service:'gmail',
+                auth:{
+                    user:process.env.EmailId,
+                    pass:process.env.Emailpswd
+                } 
+            })
+            const mailOptions = {
+                from : process.env.EmailId,
+                to : email,
+                subject : 'Your OTP code',
+                text:`Your OTP is : ${otp}.`
+            }
+            const sendmail = await transporter.sendMail(mailOptions);
+            console.log('Email sent' + sendmail.response)
+            return res.status(200).json({message:"OTP sent successfully"})
+        }
+    } catch (error) {
+        console.log('Error sending otp',error);
+        return res.status(500).json({message:"Internal server error"})
+    }
+
 }

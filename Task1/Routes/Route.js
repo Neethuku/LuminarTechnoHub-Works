@@ -4,5 +4,6 @@ const userController = require('../Controllers/userController')
 
 router.post('/api/register',userController.userRegistration)
 router.post('/api/login',userController.userLogin)
+router.post('/api/sendOtp',userController.sendOTPtoEmail)
 
 module.exports = router
